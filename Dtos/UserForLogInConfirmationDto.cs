@@ -1,9 +1,9 @@
 namespace DotnetAPI.Dtos
 {
-    partial class UserForLogInConfirmationDto
+    public partial class UserForLogInConfirmationDto
     {
-        byte[] PasswordHash { get; set; }
-        byte[] PasswordSalt { get; set; }
+        public byte[] PasswordHash { get; set; }
+        public byte[] PasswordSalt { get; set; }
 
         UserForLogInConfirmationDto()
         {
