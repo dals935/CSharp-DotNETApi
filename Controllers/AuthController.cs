@@ -24,9 +24,9 @@ namespace DotnetAPI.Controllers
         {
             if (userForRegistration.Password == userForRegistration.PasswordConfirm)
             {
-                string sqlCheckUserEmailExists = "SELECT Email FROM TutorialAppSchema.Auth WHERE Email = '" + 
+                string sqlCheckUserEmailExists = "SELECT Email FROM TutorialAppSchema.Auth WHERE Email = '" +
                     userForRegistration + "'";
-                
+
                 IEnumerable<string> existingUsers = _dapper.LoadData<string>(sqlCheckUserEmailExists);
                 if (existingUsers.Count() == 0)
                 {
@@ -36,21 +36,12 @@ namespace DotnetAPI.Controllers
                         rng.GetNonZeroBytes(passwordSalt);
                     }
 
-                    string passwordSaltPlusString = _config.GetSection("AppSettings:PasswordKey").Value
-                     + Convert.ToBase64String(passwordSalt);
-
-                    byte[] passwordHash = KeyDerivation.Pbkdf2(
-                        password: userForRegistration.Password,
-                        salt: Encoding.ASCII.GetBytes(passwordSaltPlusString),
-                        prf: KeyDerivationPrf.HMACSHA256,
-                        iterationCount: 100000,
-                        numBytesRequested: 256/ 8
-                    );
+                    byte[] passwordHash = GetPasswordHash(userForRegistration.Password, passwordSalt);
 
                     string sqlAddAuth = @"
-                    INSERT INTO utorialAppSchema.Auth ([Email], 
+                    INSERT INTO TutorialAppSchema.Auth ([Email], 
                     [PasswordHash], 
-                    [PasswordSalt]) VALUES('" + userForRegistration.Email + 
+                    [PasswordSalt]) VALUES('" + userForRegistration.Email +
                     "', @PasswordHash, @PasswordSalt)";
 
                     List<SqlParameter> sqlParameters = new List<SqlParameter>();
@@ -63,9 +54,9 @@ namespace DotnetAPI.Controllers
                     sqlParameters.Add(passwordSaltParameter);
                     sqlParameters.Add(passwordHashParameter);
 
-                    if(_dapper.ExecuteSqlWithParameters(sqlAddAuth, sqlParameters))
+                    if (_dapper.ExecuteSqlWithParameters(sqlAddAuth, sqlParameters))
                     {
-                        
+
                         return Ok();
                     }
                     throw new Exception("Failed To Register User");
@@ -76,9 +67,44 @@ namespace DotnetAPI.Controllers
         }
 
         [HttpPost("Login")]
-        public IActionResult Login(UserForLogInDto userForLogInDto)
+        public IActionResult Login(UserForLogInDto userForLogIn)
         {
+            string sqlForHashAndSalt = @"SELECT
+                [PasswordHash],
+                [PasswordSalt] FROM TutorialAppSchema.Auth WHERE Email = '" +
+                userForLogIn.Email + "'";
+
+            
+
+            UserForLogInConfirmationDto userForConformation = _dapper
+                .LoadDataSingle<UserForLogInConfirmationDto>(sqlForHashAndSalt);
+
+            byte[] passwordHash = GetPasswordHash(userForLogIn.Password, userForConformation.PasswordSalt);
+
+            //If Statement Won't work here
+            for (int index = 0; index < passwordHash.Length; index++)
+            {
+                if (passwordHash[index] != userForConformation.PasswordHash[index])
+                {
+                    return StatusCode(401, "Password Incorrect");
+                }
+            }
+
             return Ok();
+        }
+
+        private byte[] GetPasswordHash(string password, byte[] passwordSalt)
+        {
+            string passwordSaltPlusString = _config.GetSection("AppSettings:PasswordKey").Value
+                     + Convert.ToBase64String(passwordSalt);
+
+            return KeyDerivation.Pbkdf2(
+                password: password,
+                salt: Encoding.ASCII.GetBytes(passwordSaltPlusString),
+                prf: KeyDerivationPrf.HMACSHA256,
+                iterationCount: 100000,
+                numBytesRequested: 256 / 8
+            );
         }
 
     }
