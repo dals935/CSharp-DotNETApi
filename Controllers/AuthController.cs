@@ -57,7 +57,26 @@ namespace DotnetAPI.Controllers
                     if (_dapper.ExecuteSqlWithParameters(sqlAddAuth, sqlParameters))
                     {
 
-                        return Ok();
+                        string sqlAddUser = @"
+                        INSERT INTO TutorialAppSchema.Users(
+                            [FirstName],
+                            [LastName],
+                            [Email],
+                            [Gender],
+                            [Active]
+                        ) VALUES ( '" + userForRegistration.FirstName +
+                            "', '" + userForRegistration.LastName.Trim().Replace("'", "''") +
+                            "', '" + userForRegistration.Email +
+                            "', '" + userForRegistration.Gender +
+                            "', 1)";
+
+                        if(_dapper.ExecuteSql(sqlAddUser))
+                        {
+
+                            return Ok();
+                            
+                        }
+                        throw new Exception("Failed To Add User");
                     }
                     throw new Exception("Failed To Register User");
                 }
@@ -69,19 +88,22 @@ namespace DotnetAPI.Controllers
         [HttpPost("Login")]
         public IActionResult Login(UserForLogInDto userForLogIn)
         {
-            string sqlForHashAndSalt = @"SELECT
+            string sqlForHashAndSalt = @"SELECT [Email],
                 [PasswordHash],
                 [PasswordSalt] FROM TutorialAppSchema.Auth WHERE Email = '" +
                 userForLogIn.Email + "'";
 
-            
+            UserForLogInConfirmationDto? userForConformation = _dapper
+                .LoadDataSingle<UserForLogInConfirmationDto?>(sqlForHashAndSalt);
 
-            UserForLogInConfirmationDto userForConformation = _dapper
-                .LoadDataSingle<UserForLogInConfirmationDto>(sqlForHashAndSalt);
+            if(userForConformation == null)
+            {
+                return StatusCode(401, "Email Incorrect");
+            }
 
             byte[] passwordHash = GetPasswordHash(userForLogIn.Password, userForConformation.PasswordSalt);
 
-            //If Statement Won't work here
+            //If Statement Won't work for password here
             for (int index = 0; index < passwordHash.Length; index++)
             {
                 if (passwordHash[index] != userForConformation.PasswordHash[index])

@@ -54,7 +54,7 @@ public class UserController : ControllerBase
             FROM  TutorialAppSchema.Users
                 WHERE UserId = " + userId.ToString();
 
-        User user = _dapper.LoadDataSingle<User>(sql);
+        User? user = _dapper.LoadDataSingle<User>(sql);
 
         if(user != default)
         {
@@ -148,7 +148,7 @@ public class UserController : ControllerBase
             WHERE 
             UserId = " + userId.ToString();
 
-        UserSalary userSalary = _dapper.LoadDataSingle<UserSalary>(sql);
+        UserSalary? userSalary = _dapper.LoadDataSingle<UserSalary>(sql);
 
         if(userSalary != default)
         {
@@ -230,7 +230,7 @@ public class UserController : ControllerBase
             WHERE 
             UserId = " + userId.ToString();
 
-        UserJobInfo userJobInfo = _dapper.LoadDataSingle<UserJobInfo>(sql);
+        UserJobInfo? userJobInfo = _dapper.LoadDataSingle<UserJobInfo>(sql);
 
         if(userJobInfo != default)
         {

@@ -18,12 +18,12 @@ namespace DotnetAPI.Data
             return dbConnection.Query<T>(sql);
         }
 
-        public T LoadDataSingle<T>(string sql)
+        public T? LoadDataSingle<T>(string sql)
         {
             IDbConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
             try
             {
-                return dbConnection.QuerySingle<T>(sql);
+                return dbConnection.QuerySingleOrDefault<T?>(sql);
             } 
             catch
             {
