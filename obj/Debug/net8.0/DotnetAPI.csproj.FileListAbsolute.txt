@@ -73,3 +73,4 @@ D:\vscode_projects\Csharp-DotNetAPI-Sample\DotNetAPICourse\DotnetAPI\bin\Debug\n
 D:\vscode_projects\Csharp-DotNetAPI-Sample\DotNetAPICourse\DotnetAPI\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Abstractions.dll
 D:\vscode_projects\Csharp-DotNetAPI-Sample\DotNetAPICourse\DotnetAPI\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Relational.dll
 D:\vscode_projects\Csharp-DotNetAPI-Sample\DotNetAPICourse\DotnetAPI\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.SqlServer.dll
+D:\vscode_projects\Csharp-DotNetAPI-Sample\DotNetAPICourse\DotnetAPI\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
