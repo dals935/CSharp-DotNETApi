@@ -72,120 +72,18 @@ public class UserCompleteController : ControllerBase
         throw new Exception("Failed To Update User");
     }
 
+    //Delete All User Data
     [HttpDelete("DeleteUser/{userId}")]
     public IActionResult DeleteUsers(int userId)
     {
-        string sql = @"
-            DELETE FROM 
-                TutorialAppSchema.Users
-            WHERE UserId = " + userId.ToString();
+        string sql = @"EXEC TutorialAppSchema.spUser_Delete
+            @UserId = " + userId.ToString();
 
         if (_dapper.ExecuteSql(sql))
         {
             return Ok();
         }
         throw new Exception("Failed To Delete User");
-    }
-
-    [HttpGet("GetUsersSalary")]
-    // public IActionResult Test()
-    public IEnumerable<UserSalary> GetUsersSalary()
-    {
-        string sql = @"
-            SELECT  [UserId]
-                , [Salary]
-            FROM  TutorialAppSchema.UserSalary;";
-
-        IEnumerable<UserSalary> usersSalary = _dapper.LoadData<UserSalary>(sql);
-
-        return usersSalary;
-    }
-
-    [HttpGet("GetUserSalary/{userId}")]
-    public UserSalary GetUserSalary(int userId)
-    {
-        string sql = @"
-            SELECT
-            [Userid],
-            [Salary] 
-            FROM 
-            TutorialAppSchema.UserSalary 
-            WHERE 
-            UserId = " + userId.ToString();
-
-        UserSalary? userSalary = _dapper.LoadDataSingle<UserSalary>(sql);
-
-        if(userSalary != default)
-        {
-            return userSalary;
-        }
-        throw new Exception("User Salary Not Found");
-    }
-
-    [HttpDelete("DeleteUserSalary/{userId}")]
-    public IActionResult DeleteUsersSalary(int userId)
-    {
-        string sql = @"
-            DELETE FROM 
-                TutorialAppSchema.UserSalary
-            WHERE UserId = " + userId.ToString();
-
-        if (_dapper.ExecuteSql(sql))
-        {
-            return Ok();
-        }
-        throw new Exception("Failed To Delete User Salary");
-    }
-
-    [HttpGet("GetUsersJobInfo")]
-    public IEnumerable<UserJobInfo> GetUsersJobInfo()
-    {
-        string sql = @"
-            SELECT 
-            [UserId],
-            [JobTitle],
-            [Department] 
-            FROM TutorialAppSchema.UserJobInfo";
-
-        IEnumerable<UserJobInfo> usersJobInfo = _dapper.LoadData<UserJobInfo>(sql);
-
-        return usersJobInfo;
-    }
-
-    [HttpGet("GetUserJobInfo/{userId}")]
-    public UserJobInfo GetUserJobInfo(int userId)
-    {
-        string sql = @"
-            SELECT 
-            [UserId],
-            [JobTitle],
-            [Department] 
-            FROM TutorialAppSchema.UserJobInfo
-            WHERE 
-            UserId = " + userId.ToString();
-
-        UserJobInfo? userJobInfo = _dapper.LoadDataSingle<UserJobInfo>(sql);
-
-        if(userJobInfo != default)
-        {
-            return userJobInfo;
-        }
-        throw new Exception("User Job Info Not Found");
-    }
-
-    [HttpDelete("DeleteUserJobInfo/{userId}")]
-    public IActionResult DeleteUserJobInfo(int userId)
-    {
-        string sql = @"
-            DELETE FROM 
-                TutorialAppSchema.UserJobInfo
-            WHERE UserId = " + userId.ToString();
-
-        if (_dapper.ExecuteSql(sql))
-        {
-            return Ok();
-        }
-        throw new Exception("Failed To Delete User Job Info");
     }
 
 }
