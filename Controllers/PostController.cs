@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DotnetAPI.Controllers
 {
-    // [Authorize]
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class PostController : ControllerBase
@@ -36,7 +36,7 @@ namespace DotnetAPI.Controllers
             {
                 parameters += ", @SearchValue = '" + searchParam + "'";
             }
-            if (postId == 0 && userId == 0 && searchParam == "None")
+            if (postId == 0 && userId == 0 && searchParam.ToLower() == "none")
             {
                 return _dapper.LoadData<Post>(sql);
             }
@@ -49,14 +49,8 @@ namespace DotnetAPI.Controllers
         [HttpGet("MyPosts")]
         public IEnumerable<Post> GetMyPosts()
         {
-            string sql = @"SELECT [PostId],
-                    [UserId],
-                    [PostTitle],
-                    [PostContent],
-                    [PostCreated],
-                    [PostUpdated] 
-                FROM TutorialAppSchema.Posts
-                    WHERE UserId = "+ this.User.FindFirst("userId")?.Value;
+            string sql = @"EXEC TutorialAppSchema.spPosts_Get @UserId = "
+            + this.User.FindFirst("userId")?.Value;
                 
             return _dapper.LoadData<Post>(sql);
         }
