@@ -25,7 +25,7 @@ public class UserCompleteController : ControllerBase
     
     //Return Data Of All Users or Single User
     [HttpGet("GetUsers/{userId}/{isActive}")]
-    public IEnumerable<UserCompleteData> GetUsers(int userId, bool isActive)
+    public IEnumerable<UserCompleteData> GetUsers(int userId = 0, bool isActive = true)
     {
         string sql = @"EXEC TutorialAppSchema.spUsers_Get";
         string parameters = "";
