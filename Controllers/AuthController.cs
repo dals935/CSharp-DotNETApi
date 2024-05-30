@@ -1,5 +1,6 @@
 using System.Data;
 using System.Security.Cryptography;
+using AutoMapper;
 using Dapper;
 using DotnetAPI.Data;
 using DotnetAPI.Dtos;
@@ -18,10 +19,17 @@ namespace DotnetAPI.Controllers
     {
         private readonly DataContextDapper _dapper;
         private readonly AuthHelper _authHelper;
+        private readonly ReusableSql _reusableSql;
+        private readonly IMapper _mapper;
         public AuthController(IConfiguration config)
         {
             _dapper = new DataContextDapper(config);
             _authHelper = new AuthHelper(config);
+            _reusableSql = new ReusableSql(config);
+            _mapper = new Mapper(new MapperConfiguration(cfg => 
+            {
+                cfg.CreateMap<UserForRegistrationDto, UserCompleteData>();
+            }));
         }
 
         [AllowAnonymous]
@@ -43,21 +51,12 @@ namespace DotnetAPI.Controllers
 
                     if (_authHelper.SetPassword(userForSetPassword))
                     {
-                        string sqlAddUser = @"EXEC TutorialAppSchema.spUser_Upsert
-                                @FirstName = '" + userForRegistration.FirstName +
-                            "', @LastName = '" + userForRegistration.LastName.Trim().Replace("'","''") +
-                            "', @Email = '" + userForRegistration.Email +
-                            "', @Gender = '" + userForRegistration.Gender +
-                            "', @Active = 1" + 
-                            ", @JobTitle = '" + userForRegistration.JobTitle + 
-                            "', @Department = '" + userForRegistration.Department + 
-                            "', @Salary = '" + userForRegistration.Salary + "'";
+                        UserCompleteData userComplete = _mapper.Map<UserCompleteData>(userForRegistration);
+                        userComplete.Active = true;
 
-                        if (_dapper.ExecuteSql(sqlAddUser))
+                        if (_reusableSql.UpsertUser(userComplete))
                         {
-
                             return Ok();
-
                         }
                         throw new Exception("Failed To Add User");
                     }
