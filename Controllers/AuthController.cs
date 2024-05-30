@@ -95,10 +95,6 @@ namespace DotnetAPI.Controllers
             
             DynamicParameters sqlParameters = new DynamicParameters();
 
-            // SqlParameter emailParameter = new SqlParameter("@EmailParameter", SqlDbType.VarChar);
-            // emailParameter.Value = userForLogIn.Email;
-            // sqlParameters.Add(emailParameter);
-
             sqlParameters.Add("@EmailParameter", userForLogIn.Email, DbType.String);
 
             UserForLogInConfirmationDto? userForConformation = _dapper

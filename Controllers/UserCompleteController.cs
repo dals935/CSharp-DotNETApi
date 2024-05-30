@@ -1,4 +1,6 @@
+using System.Data;
 using System.Runtime.CompilerServices;
+using Dapper;
 using DotnetAPI.Data;
 using DotnetAPI.Dtos;
 using DotnetAPI.Models;
@@ -28,24 +30,28 @@ public class UserCompleteController : ControllerBase
     public IEnumerable<UserCompleteData> GetUsers(int userId = 0, bool isActive = true)
     {
         string sql = @"EXEC TutorialAppSchema.spUsers_Get";
-        string parameters = "";
+        string stringParameters = "";
+        DynamicParameters sqlParameters = new DynamicParameters();
 
         if (userId != 0)
         {
-            parameters += ", @UserId = " + userId.ToString();
+            stringParameters += ", @UserId = @UserIdParameter";
+            sqlParameters.Add("@UserIdParameter", userId, DbType.Int32);
         }
         if (isActive)
         {
-            parameters += ", @Active = " + isActive.ToString();
+            stringParameters += ", @Active = @ActiveParameter";
+            sqlParameters.Add("@ActiveParameter", isActive, DbType.Boolean);
         }
         else
         {
-            parameters += ", @Active = " + isActive.ToString();
+            stringParameters += ", @Active = @ActiveParameter";
+            sqlParameters.Add("@ActiveParameter", isActive, DbType.Boolean);
         }
 
-        sql += parameters.Substring(1);
+        sql += stringParameters.Substring(1);
 
-        IEnumerable<UserCompleteData> users = _dapper.LoadData<UserCompleteData>(sql);
+        IEnumerable<UserCompleteData> users = _dapper.LoadDataWithParameters<UserCompleteData>(sql, sqlParameters);
 
         return users;
     }
@@ -54,18 +60,30 @@ public class UserCompleteController : ControllerBase
     [HttpPut("UpsertUser")]
     public IActionResult UpsertUser(UserCompleteData user)
     {
-        string sql = @"EXEC TutorialAppSchema.Users.spUser_Upsert
-                @FirstName = '" + user.FirstName +
-            "', @LastName = '" + user.LastName.Trim().Replace("'","''") +
-            "', @Email = '" + user.Email +
-            "', @Gender = '" + user.Gender +
-            "', @Active = '" + user.Active + 
-            "', @JobTitle = '" + user.JobTitle + 
-            "', @Department = '" + user.Department + 
-            "', @Salary = '" + user.Salary + 
-            "',  @UserId = " + user.UserId.ToString();
+        string sql = @"EXEC TutorialAppSchema.spUser_Upsert
+                @FirstName = @FirtNameParameter,
+                @LastName = @LastNameParameter,
+                @Email = @EmailParameter,
+                @Gender = @GenderParameter,
+                @Active = @ActiveParameter,
+                @JobTitle = @JobTitileParameter,
+                @Department = @DepartmetParameter,
+                @Salary = @SalaryParameter,
+                @UserId = @UserIdParameter";
 
-        if (_dapper.ExecuteSql(sql))
+        DynamicParameters sqlParameters = new DynamicParameters();
+
+        sqlParameters.Add("@FirtNameParameter", user.FirstName, DbType.String);
+        sqlParameters.Add("@LastNameParameter", user.LastName.Trim().Replace("'","''"), DbType.String);
+        sqlParameters.Add("@EmailParameter", user.Email, DbType.String);
+        sqlParameters.Add("@GenderParameter", user.Gender, DbType.String);
+        sqlParameters.Add("@ActiveParameter", user.Active, DbType.Boolean);
+        sqlParameters.Add("@JobTitileParameter", user.JobTitle, DbType.String);
+        sqlParameters.Add("@DepartmetParameter", user.Department, DbType.String);
+        sqlParameters.Add("@SalaryParameter", user.Salary, DbType.Decimal);
+        sqlParameters.Add("@UserIdParameter", user.UserId, DbType.Int32);
+
+        if (_dapper.ExecuteSqlWithParameters(sql, sqlParameters))
         {
             return Ok();
         }
@@ -77,9 +95,13 @@ public class UserCompleteController : ControllerBase
     public IActionResult DeleteUsers(int userId)
     {
         string sql = @"EXEC TutorialAppSchema.spUser_Delete
-            @UserId = " + userId.ToString();
+            @UserId = @UserIdParameter";
 
-        if (_dapper.ExecuteSql(sql))
+        DynamicParameters sqlParameters = new DynamicParameters();
+
+        sqlParameters.Add("@UserIdParameter", userId, DbType.Int32);
+
+        if (_dapper.ExecuteSqlWithParameters(sql, sqlParameters))
         {
             return Ok();
         }
