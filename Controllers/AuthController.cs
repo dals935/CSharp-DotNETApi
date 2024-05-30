@@ -1,5 +1,6 @@
 using System.Data;
 using System.Security.Cryptography;
+using Dapper;
 using DotnetAPI.Data;
 using DotnetAPI.Dtos;
 using DotnetAPI.Helpers;
@@ -89,13 +90,19 @@ namespace DotnetAPI.Controllers
         [HttpPost("Login")]
         public IActionResult Login(UserForLogInDto userForLogIn)
         {
-            string sqlForHashAndSalt = @"SELECT [Email],
-                [PasswordHash],
-                [PasswordSalt] FROM TutorialAppSchema.Auth WHERE Email = '" +
-                userForLogIn.Email + "'";
+            string sqlForHashAndSalt = @"EXEC TutorialAppSchema.spLoginConfirmation_get 
+                @Email = @EmailParameter";
+            
+            DynamicParameters sqlParameters = new DynamicParameters();
+
+            // SqlParameter emailParameter = new SqlParameter("@EmailParameter", SqlDbType.VarChar);
+            // emailParameter.Value = userForLogIn.Email;
+            // sqlParameters.Add(emailParameter);
+
+            sqlParameters.Add("@EmailParameter", userForLogIn.Email, DbType.String);
 
             UserForLogInConfirmationDto? userForConformation = _dapper
-                .LoadDataSingle<UserForLogInConfirmationDto?>(sqlForHashAndSalt);
+                .LoadDataSingleWithParameters<UserForLogInConfirmationDto?>(sqlForHashAndSalt, sqlParameters);
 
             if (userForConformation == null)
             {
